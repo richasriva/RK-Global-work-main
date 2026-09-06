@@ -34,77 +34,32 @@ export default function HeroSlide({ slide, isActive, onOpenQuote }) {
   ];
 
   return (
-    <div style={{
-      display: 'flex',
-      alignItems: 'center',
-      minHeight: '580px',
-      width: '100%',
-      backgroundColor: '#FFFFFF',
-      position: 'relative',
-      overflow: 'hidden',
-      borderBottom: '4px solid #F47B20'
-    }}>
-
-      {/* Single unified row: text left, image right — no nested wrappers */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        gap: '0',
-        padding: '60px 80px',
-        width: '100%',
-        maxWidth: '1300px',
-        margin: '0 auto',
-        boxSizing: 'border-box'
-      }}>
+    <div className="hero-slide-container">
+      {/* Single unified row: text left, image right */}
+      <div className="hero-slide-row">
 
         {/* LEFT: Text block */}
-        <div style={{ flex: '1 1 50%', paddingRight: '48px' }}>
+        <div className="hero-slide-text-col">
 
           {/* Badge */}
-          <div style={{ marginBottom: '20px' }}>
-            <span style={{
-              backgroundColor: '#F47B20',
-              color: '#fff',
-              fontSize: '0.7rem',
-              fontWeight: 900,
-              padding: '5px 16px',
-              borderRadius: '20px',
-              letterSpacing: '0.12em',
-              textTransform: 'uppercase'
-            }}>
+          <div style={{ marginBottom: '16px' }}>
+            <span className="hero-slide-badge">
               {badgeText}
             </span>
           </div>
 
           {/* Headline */}
-          <h1 style={{
-            fontSize: 'clamp(2rem, 3.2vw, 3rem)',
-            fontWeight: 900,
-            lineHeight: 1.15,
-            marginBottom: '16px',
-            color: '#0B1F33'
-          }}>
+          <h1 className="hero-slide-title">
             {title}
           </h1>
 
           {/* Description */}
-          <p style={{
-            fontSize: '1rem',
-            color: '#4A5568',
-            lineHeight: 1.7,
-            marginBottom: '28px'
-          }}>
+          <p className="hero-slide-desc">
             {description}
           </p>
 
           {/* Features */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(2, 1fr)',
-            gap: '10px 24px',
-            marginBottom: '36px'
-          }}>
+          <div className="hero-slide-features">
             {featuresList.map((feat, idx) => {
               const IconComp = iconMap[feat.icon] || ShieldCheck;
               return (
@@ -127,20 +82,19 @@ export default function HeroSlide({ slide, isActive, onOpenQuote }) {
           </div>
 
           {/* Buttons */}
-          <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap' }}>
+          <div className="hero-slide-btn-group">
             <button
               type="button"
-              className="btn btn-primary"
+              className="btn btn-primary hero-cta-btn"
               onClick={onOpenQuote}
-              style={{ padding: '13px 28px', fontSize: '0.92rem', borderRadius: '8px' }}
             >
               <span>{slide.btnPrimaryText || 'Request Quote Now'}</span>
               <ArrowRight size={17} />
             </button>
             <Link
               href="/products"
-              className="btn btn-outline"
-              style={{ borderColor: '#0B1F33', color: '#0B1F33', padding: '13px 28px', fontSize: '0.92rem', borderRadius: '8px' }}
+              className="btn btn-outline hero-cta-btn"
+              style={{ borderColor: '#0B1F33', color: '#0B1F33' }}
             >
               <span>{slide.btnSecondaryText || 'View 2026 Catalog'}</span>
               <ArrowRight size={17} />
@@ -148,36 +102,162 @@ export default function HeroSlide({ slide, isActive, onOpenQuote }) {
           </div>
         </div>
 
-        {/* RIGHT: Image — inline, no wrapper, no border, blends with white bg */}
-        <div style={{
-          flex: '1 1 50%',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center'
-        }}>
+        {/* RIGHT: Image */}
+        <div className="hero-slide-img-col">
           <img
             src={slide.image || imgSrc}
             alt={title}
             onError={handleError}
-            style={{
-              maxWidth: '90%',
-              maxHeight: '440px',
-              width: '900px',
-              height: '800px',
-              objectFit: 'contain',
-              display: 'flex',
-              mixBlendMode: 'multiply'
-            }}
+            className="hero-slide-img"
           />
         </div>
 
       </div>
 
       <style jsx>{`
-        @media (max-width: 900px) {
-          div[style*="space-between"] {
-            flex-direction: column !important;
-            padding: 40px 24px !important;
+        .hero-slide-container {
+          display: flex;
+          align-items: center;
+          min-height: 560px;
+          width: 100%;
+          background-color: #FFFFFF;
+          position: relative;
+          overflow: hidden;
+          border-bottom: 4px solid #F47B20;
+        }
+        .hero-slide-row {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 50px 60px;
+          width: 100%;
+          max-width: 1300px;
+          margin: 0 auto;
+          box-sizing: border-box;
+        }
+        .hero-slide-text-col {
+          flex: 1 1 50%;
+          padding-right: 40px;
+        }
+        .hero-slide-badge {
+          background-color: #F47B20;
+          color: #fff;
+          font-size: 0.72rem;
+          font-weight: 900;
+          padding: 6px 16px;
+          border-radius: 20px;
+          letter-spacing: 0.12em;
+          text-transform: uppercase;
+          display: inline-block;
+        }
+        .hero-slide-title {
+          font-size: clamp(1.85rem, 3.2vw, 3rem);
+          font-weight: 900;
+          line-height: 1.18;
+          margin-bottom: 16px;
+          color: #0B1F33;
+        }
+        .hero-slide-desc {
+          font-size: 0.98rem;
+          color: #4A5568;
+          line-height: 1.65;
+          margin-bottom: 24px;
+        }
+        .hero-slide-features {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 12px 20px;
+          margin-bottom: 30px;
+        }
+        .hero-slide-btn-group {
+          display: flex;
+          gap: 14px;
+          flex-wrap: wrap;
+        }
+        .hero-cta-btn {
+          padding: 13px 26px;
+          font-size: 0.92rem;
+          border-radius: 8px;
+        }
+        .hero-slide-img-col {
+          flex: 1 1 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .hero-slide-img {
+          max-width: 100%;
+          max-height: 440px;
+          width: auto;
+          height: auto;
+          object-fit: contain;
+          mix-blend-mode: multiply;
+        }
+
+        @media (max-width: 992px) {
+          .hero-slide-container {
+            min-height: auto;
+          }
+          .hero-slide-row {
+            flex-direction: column-reverse;
+            padding: 36px 20px;
+            gap: 28px;
+          }
+          .hero-slide-text-col {
+            padding-right: 0;
+            width: 100%;
+            text-align: center;
+          }
+          .hero-slide-title {
+            font-size: clamp(1.6rem, 5vw, 2.4rem);
+          }
+          .hero-slide-features {
+            justify-content: center;
+            grid-template-columns: repeat(2, minmax(130px, 1fr));
+            text-align: left;
+            max-width: 480px;
+            margin: 0 auto 28px;
+          }
+          .hero-slide-btn-group {
+            justify-content: center;
+          }
+          .hero-slide-img-col {
+            width: 100%;
+          }
+          .hero-slide-img {
+            max-height: 320px;
+          }
+        }
+
+        @media (max-width: 540px) {
+          .hero-slide-row {
+            padding: 24px 14px;
+            gap: 20px;
+          }
+          .hero-slide-title {
+            font-size: clamp(1.4rem, 6vw, 1.85rem);
+            margin-bottom: 12px;
+          }
+          .hero-slide-desc {
+            font-size: 0.88rem;
+            margin-bottom: 18px;
+          }
+          .hero-slide-features {
+            grid-template-columns: 1fr;
+            gap: 10px;
+            margin-bottom: 22px;
+          }
+          .hero-slide-btn-group {
+            flex-direction: column;
+            width: 100%;
+            gap: 10px;
+          }
+          .hero-cta-btn {
+            width: 100%;
+            justify-content: center;
+          }
+          .hero-slide-img {
+            max-height: 240px;
           }
         }
       `}</style>

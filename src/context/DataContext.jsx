@@ -222,6 +222,22 @@ export function DataProvider({ children }) {
 
     syncAllFromSupabase();
 
+    // BroadcastChannel for instant (0ms) live synchronization across all open browser tabs
+    let bc = null;
+    if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+      try {
+        bc = new BroadcastChannel('rk_global_cms_sync');
+        bc.onmessage = (event) => {
+          const { key, data } = event.data || {};
+          if (key === 'rk_cms_products') setProducts(data);
+          else if (key === 'rk_cms_categories') setCategories(data);
+          else if (key === 'rk_cms_slides') setSlides(data);
+          else if (key === 'rk_cms_blogs') setBlogs(data);
+          else if (key === 'rk_cms_about') setAboutData(data);
+        };
+      } catch (e) {}
+    }
+
     // Subscribe to Supabase Realtime changes for instant live updates across visitors
     let channel = null;
     try {
@@ -243,6 +259,7 @@ export function DataProvider({ children }) {
 
     return () => {
       if (channel) supabase.removeChannel(channel);
+      if (bc) bc.close();
     };
   }, []);
 
@@ -300,6 +317,18 @@ export function DataProvider({ children }) {
           console.error('[DataContext] saveStorage error:', err);
         }
       }
+    }
+  };
+
+  // Instant cross-tab broadcast synchronization
+  const broadcastSync = (key, data) => {
+    saveStorage(key, data);
+    if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+      try {
+        const bc = new BroadcastChannel('rk_global_cms_sync');
+        bc.postMessage({ key, data });
+        bc.close();
+      } catch (e) {}
     }
   };
 
@@ -379,7 +408,7 @@ export function DataProvider({ children }) {
     const raw = rawProduct(prodData);
     const updated = [raw, ...products];
     setProducts(updated);
-    saveStorage('rk_cms_products', updated);
+    broadcastSync('rk_cms_products', updated);
 
     // Save to Supabase in background
     const cleaned = cleanProduct(prodData);
@@ -398,7 +427,7 @@ export function DataProvider({ children }) {
     const raw = rawProduct(updatedProd);
     const updated = products.map(p => String(p.id) === String(raw.id) ? raw : p);
     setProducts(updated);
-    saveStorage('rk_cms_products', updated);
+    broadcastSync('rk_cms_products', updated);
 
     // Save to Supabase in background
     const cleaned = cleanProduct(updatedProd);
@@ -417,7 +446,7 @@ export function DataProvider({ children }) {
     const targetId = String(id);
     const updated = products.filter(p => String(p.id) !== targetId);
     setProducts(updated);
-    saveStorage('rk_cms_products', updated);
+    broadcastSync('rk_cms_products', updated);
 
     // Delete from Supabase in background
     supabase.from('products').delete().eq('id', targetId).then(({ error }) => {
@@ -429,9 +458,10 @@ export function DataProvider({ children }) {
   const addSlide = (slideData) => {
     lastLocalEditRef.current = Date.now();
     const raw = rawSlide(slideData);
-    const updated = [...slides, raw];
+    // PREPEND NEW BANNER SO IT SHOWS FIRST AT INDEX 0 INSTANTLY
+    const updated = [raw, ...slides];
     setSlides(updated);
-    saveStorage('rk_cms_slides', updated);
+    broadcastSync('rk_cms_slides', updated);
 
     const cleaned = cleanSlide(slideData);
     supabase.from('hero_slides').upsert([cleaned]).then(({ error }) => {
@@ -446,7 +476,7 @@ export function DataProvider({ children }) {
     const raw = rawSlide(updatedSlide);
     const updated = slides.map(s => String(s.id) === String(raw.id) ? raw : s);
     setSlides(updated);
-    saveStorage('rk_cms_slides', updated);
+    broadcastSync('rk_cms_slides', updated);
 
     const cleaned = cleanSlide(updatedSlide);
     supabase.from('hero_slides').upsert([cleaned]).then(({ error }) => {
@@ -461,7 +491,7 @@ export function DataProvider({ children }) {
     const targetId = String(id);
     const updated = slides.filter(s => String(s.id) !== targetId);
     setSlides(updated);
-    saveStorage('rk_cms_slides', updated);
+    broadcastSync('rk_cms_slides', updated);
 
     supabase.from('hero_slides').delete().eq('id', targetId).then(({ error }) => {
       if (error) console.error('[DataContext] Background deleteSlide error:', error);
@@ -474,7 +504,7 @@ export function DataProvider({ children }) {
     const raw = rawBlog(blogData);
     const updated = [raw, ...blogs];
     setBlogs(updated);
-    saveStorage('rk_cms_blogs', updated);
+    broadcastSync('rk_cms_blogs', updated);
 
     const cleaned = cleanBlog(blogData);
     supabase.from('blogs').upsert([cleaned]).then(({ error }) => {
@@ -489,7 +519,7 @@ export function DataProvider({ children }) {
     const raw = rawBlog(updatedBlog);
     const updated = blogs.map(b => String(b.id) === String(raw.id) ? raw : b);
     setBlogs(updated);
-    saveStorage('rk_cms_blogs', updated);
+    broadcastSync('rk_cms_blogs', updated);
 
     const cleaned = cleanBlog(updatedBlog);
     supabase.from('blogs').upsert([cleaned]).then(({ error }) => {
@@ -504,7 +534,7 @@ export function DataProvider({ children }) {
     const targetId = String(id);
     const updated = blogs.filter(b => String(b.id) !== targetId);
     setBlogs(updated);
-    saveStorage('rk_cms_blogs', updated);
+    broadcastSync('rk_cms_blogs', updated);
 
     supabase.from('blogs').delete().eq('id', targetId).then(({ error }) => {
       if (error) console.error('[DataContext] Background deleteBlog error:', error);
@@ -517,7 +547,7 @@ export function DataProvider({ children }) {
     const raw = rawCategory(catData);
     const updated = [raw, ...categories];
     setCategories(updated);
-    saveStorage('rk_cms_categories', updated);
+    broadcastSync('rk_cms_categories', updated);
 
     const cleaned = cleanCategory(catData);
     supabase.from('categories').upsert([cleaned]).then(({ error }) => {
@@ -532,7 +562,7 @@ export function DataProvider({ children }) {
     const raw = rawCategory(updatedCat);
     const updated = categories.map(c => String(c.id) === String(raw.id) ? raw : c);
     setCategories(updated);
-    saveStorage('rk_cms_categories', updated);
+    broadcastSync('rk_cms_categories', updated);
 
     const cleaned = cleanCategory(updatedCat);
     supabase.from('categories').upsert([cleaned]).then(({ error }) => {
@@ -547,7 +577,7 @@ export function DataProvider({ children }) {
     const targetId = String(id);
     const updated = categories.filter(c => String(c.id) !== targetId);
     setCategories(updated);
-    saveStorage('rk_cms_categories', updated);
+    broadcastSync('rk_cms_categories', updated);
 
     supabase.from('categories').delete().eq('id', targetId).then(({ error }) => {
       if (error) console.error('[DataContext] Background deleteCategory error:', error);
@@ -558,7 +588,7 @@ export function DataProvider({ children }) {
   const updateAbout = (newAboutData) => {
     lastLocalEditRef.current = Date.now();
     setAboutData(newAboutData);
-    saveStorage('rk_cms_about', newAboutData);
+    broadcastSync('rk_cms_about', newAboutData);
 
     supabase.from('site_settings').upsert([{ key: 'about_section', value: newAboutData }]).then(({ error }) => {
       if (error && typeof window !== 'undefined') {

@@ -28,10 +28,15 @@ export default function HeroSlider({ onOpenQuote }) {
     setCurrentIndex(idx);
   };
 
+  // Reset to index 0 when slides update so newly added banner appears instantly
+  useEffect(() => {
+    setCurrentIndex(0);
+  }, [slides]);
+
   // Clamp currentIndex if slides array length changes
   useEffect(() => {
     if (currentIndex >= heroSlides.length && heroSlides.length > 0) {
-      setCurrentIndex(heroSlides.length - 1);
+      setCurrentIndex(0);
     }
   }, [heroSlides.length, currentIndex]);
 
